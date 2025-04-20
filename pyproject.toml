@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "supercommit"
+version = "0.1.0"
+description = "A CLI utility for making better Git commits"
+authors = [
+    { name="Your Name", email="you@example.com" }
+]
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+    "typer[all]",
+    "GitPython",
+    "requests"
+]
+
+[project.scripts]
+supercommit = "supercommit.main:main"
+
+[tool.setuptools]
+packages = ["supercommit"]
