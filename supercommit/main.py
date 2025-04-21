@@ -105,8 +105,6 @@ def run(
         typer.echo("✅ No changes will be committed.")
         raise typer.Exit()
 
-    stage_changes(repo)
-
     message = get_commit_message(repo)
     typer.echo(f"📝 Suggested commit message: '{message}'")
 
@@ -115,6 +113,7 @@ def run(
 
     typer.echo(f"✍️ Commit message: '{message}'")
 
+    stage_changes(repo)
     commit_changes(repo, message)
 
     typer.echo("✅ Your changes've been committed!")
