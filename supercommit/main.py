@@ -5,9 +5,12 @@ from git import Repo, GitCommandError
 from typing import Annotated, Optional
 
 from supercommit.utils import generate_commit_message
+from supercommit.config import cfg
 
 app = typer.Typer()
 console = Console()
+
+config = cfg
 
 __version__ = "0.1.0-alpha"
 
@@ -49,7 +52,7 @@ def get_commit_message(repo):
         return "Update without code changes"
     with console.status("Generating a meaningful commit message...", spinner="monkey"):
         parsed_diff = parse_diff(diff)
-        return generate_commit_message(parsed_diff)
+        return generate_commit_message(parsed_diff, config=config)
 
 
 def commit_changes(repo, message):

@@ -15,7 +15,8 @@ dependencies = [
     "typer[all]",
     "GitPython",
     "requests",
-    "rich"
+    "rich",
+    "toml"
 ]
 
 [project.scripts]
