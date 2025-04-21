@@ -93,12 +93,12 @@ def run(
     stage_changes(repo)
 
     message = get_commit_message(repo)
-    typer.echo(f"📝 Suggested commit message:\n {message}")
+    typer.echo(f"📝 Suggested commit message: '{message}'")
 
     if not force and not typer.confirm(text="Use this message?", default=True):
-        message = typer.prompt("Enter your own commit message")
+        message = typer.prompt("Enter your own commit message:")
 
-    typer.echo(f"✍️ Commit message: {message}")
+    typer.echo(f"✍️ Commit message: '{message}'")
 
     commit_changes(repo, message)
 
