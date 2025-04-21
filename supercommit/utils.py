@@ -1,7 +1,7 @@
 import requests
 import os
 
-model = "llama3.2:1b"
+model = "gemma3:1b"
 SERVER = os.getenv("SUPERCOMMIT_OLLAMA_SERVER", "http://localhost:11434")
 MODEL = os.getenv("SUPERCOMMIT_OLLAMA_MODEL", model)
 
@@ -21,12 +21,8 @@ def ollama_generate(prompt: str) -> str:
 
 def summarise_git_diff(diff_text: str) -> str:
     prompt = f"""
-    You're a Senior Software Developer.
+    Summarize this git diff in plain English:
 
-    [TASK]
-    Your task is to understand the given git diff and generate a brief summary explaining what have been changed.
-    
-    [GIT DIFF]
     {diff_text}
     """
 
@@ -35,20 +31,9 @@ def summarise_git_diff(diff_text: str) -> str:
 
 def generate_commit_message(diff_text: str) -> str:
     prompt = f""""
-    You are a Senior Software Developer.
-    
-    [EXPLAINED CHANGES]
+    Generate JUST one concise conventional commit message based on this summary:
+
     {summarise_git_diff(diff_text)}
-
-    [YOUR TASK]
-    Your task is to generate a CONCISE commit message briefly explaining the changes implemented on the codebase.
-
-    [OUTPUT]
-    - ONLY 1 commit message in 1 sentence following SEMANTIC COMMIT format.
-    - Respond ONLY with the suggested message. You MUST avoid any other kind of comments.
-
-    [EXAMPLE]
-    chore: add image drawing functionality based on text input
     """
 
     return ollama_generate(prompt)
