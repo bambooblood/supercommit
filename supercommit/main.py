@@ -7,7 +7,7 @@ from supercommit.utils import generate_commit_message_with_ollama
 
 app = typer.Typer()
 
-__version__ = "0.1.0-alpha"
+__version__ = "0.2.0-alpha"
 
 
 def version_callback(value: bool):
