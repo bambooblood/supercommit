@@ -37,6 +37,7 @@ def get_diff(repo):
 
 def commit_changes(repo, message):
     repo.index.commit(message)
+    typer.echo("✅ Your changes've been committed!")
 
 
 def push_branch(repo, branch):

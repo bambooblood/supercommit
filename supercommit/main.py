@@ -1,6 +1,4 @@
 import typer
-from rich.console import Console
-from rich.spinner import Spinner
 from typing import Annotated, Optional
 
 from supercommit.utils import generate_commit_message, version_callback
@@ -47,8 +45,7 @@ def run(
         typer.echo("✅ No changes will be committed.")
         raise typer.Exit()
 
-    diff = get_diff(repo)
-    message = generate_commit_message(diff, config=config)
+    message = generate_commit_message(diff_text=get_diff(repo), config=config)
     typer.echo(f"📝 Suggested commit message: '{message}'")
 
     if not typer.confirm(text="Use this message?", default=True):
@@ -59,15 +56,11 @@ def run(
     stage_changes(repo)
     commit_changes(repo, message)
 
-    typer.echo("✅ Your changes've been committed!")
-
     if not force and not typer.confirm(text="Push commit to remote?", default=True):
         typer.echo("✅ Commit will not be pushed to remote")
         raise typer.Exit()
 
     push_branch(repo, current_branch)
-
-    typer.echo("✅ Commit pushed to remote")
 
 
 def main():
