@@ -84,7 +84,7 @@ def run(
     version: Annotated[
         Optional[bool],
         typer.Option(
-            "--version, -v", help="Package version", callback=version_callback
+            "--version", "-v", help="Package version", callback=version_callback
         ),
     ] = None,
     force: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
