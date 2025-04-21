@@ -19,11 +19,32 @@ def ollama_generate(prompt: str) -> str:
         return "None"
 
 
+def truncate_git_diff(diff_text: str, MAX_DIFF_LINES=200):
+    trimmed = diff_text
+
+    diff_lines = diff_text.splitlines()
+
+    if len(diff_lines) > MAX_DIFF_LINES:
+        trimmed = "\n".join(diff_lines[:MAX_DIFF_LINES])
+        trimmed += "\n... [diff truncated]"
+
+    return trimmed
+
+
 def summarise_git_diff(diff_text: str) -> str:
     prompt = f"""
-    Summarize this git diff in plain English:
+    You are an AI assistant that summarizes Git diffs into bullet points.
 
+    Given the following git diff, write a concise summary of the changes in plain English. Focus on what was changed and why (if it’s clear). Group related changes together and omit low-level syntax details.
+
+    Format the summary as a short bullet list. Use past tense.
+
+    Git diff:
+    \"\"\"
     {diff_text}
+    \"\"\"
+
+    Summary:
     """
 
     return ollama_generate(prompt)

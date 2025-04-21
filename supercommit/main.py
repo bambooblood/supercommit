@@ -47,9 +47,9 @@ def get_commit_message(repo):
     diff = repo.git.diff("HEAD")
     if not diff.strip():
         return "Update without code changes"
-    # TODO: Handle potential too large payload and avoid LLM context window broken down
     with console.status("Generating a meaningful commit message...", spinner="monkey"):
-        return generate_commit_message(diff)
+        parsed_diff = parse_diff(diff)
+        return generate_commit_message(parsed_diff)
 
 
 def commit_changes(repo, message):
@@ -62,6 +62,21 @@ def push_branch(repo, branch):
         typer.echo(f"🚀 Pushed branch {branch} to origin.")
     except GitCommandError as e:
         typer.echo(f"⚠️ Push failed: {e}", err=True)
+
+
+def parse_diff(diff_text: str, MAX_DIFF_LINES=200):
+    diff_lines = diff_text.splitlines()
+
+    if len(diff_lines) > MAX_DIFF_LINES:
+        trimmed = "\n".join(diff_lines[:MAX_DIFF_LINES])
+        trimmed += "\n... [diff truncated]"
+        typer.echo(
+            f"⚠️ Large diff detected — considering only the first {str(MAX_DIFF_LINES)} lines"
+        )
+    else:
+        trimmed = diff_text
+
+    return trimmed
 
 
 @app.command()
