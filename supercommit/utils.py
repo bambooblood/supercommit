@@ -1,14 +1,26 @@
 import requests
 import os
 
-# model = "llama3.2:1b"
-model = "gemma3:1b"
+model = "llama3.2:1b"
 SERVER = os.getenv("SUPERCOMMIT_OLLAMA_SERVER", "http://localhost:11434")
 MODEL = os.getenv("SUPERCOMMIT_OLLAMA_MODEL", model)
 
 
-def generate_commit_message_with_ollama(diff_text: str) -> str:
-    summary_prompt = f"""
+def ollama_generate(prompt: str) -> str:
+    response = requests.post(
+        f"{SERVER}/api/generate",
+        json={"model": MODEL, "prompt": prompt, "stream": False},
+    )
+
+    if response.status_code == 200:
+        result = response.json()
+        return result.get("response", "").strip()
+    else:
+        return "None"
+
+
+def summarise_git_diff(diff_text: str) -> str:
+    prompt = f"""
     You're a Senior Software Developer.
 
     [TASK]
@@ -18,22 +30,15 @@ def generate_commit_message_with_ollama(diff_text: str) -> str:
     {diff_text}
     """
 
-    response = requests.post(
-        f"{SERVER}/api/generate",
-        json={"model": MODEL, "prompt": summary_prompt, "stream": False},
-    )
+    return ollama_generate(prompt)
 
-    changes = "None"
 
-    if response.status_code == 200:
-        result = response.json()
-        changes = result.get("response", "").strip()
-
+def generate_commit_message(diff_text: str) -> str:
     prompt = f""""
     You are a Senior Software Developer.
     
     [EXPLAINED CHANGES]
-    {changes}
+    {summarise_git_diff(diff_text)}
 
     [YOUR TASK]
     Your task is to generate a CONCISE commit message briefly explaining the changes implemented on the codebase.
@@ -46,13 +51,4 @@ def generate_commit_message_with_ollama(diff_text: str) -> str:
     chore: add image drawing functionality based on text input
     """
 
-    response = requests.post(
-        f"{SERVER}/api/generate",
-        json={"model": MODEL, "prompt": prompt, "stream": False},
-    )
-
-    if response.status_code == 200:
-        result = response.json()
-        return result.get("response", "").strip()
-    else:
-        return "None"
+    return ollama_generate(prompt)

@@ -14,7 +14,8 @@ requires-python = ">=3.7"
 dependencies = [
     "typer[all]",
     "GitPython",
-    "requests"
+    "requests",
+    "rich"
 ]
 
 [project.scripts]

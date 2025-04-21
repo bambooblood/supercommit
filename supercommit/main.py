@@ -1,13 +1,15 @@
-from typing import Annotated, Optional
 import typer
+from rich.console import Console
+from rich.spinner import Spinner
 from git import Repo, GitCommandError
-from datetime import datetime
+from typing import Annotated, Optional
 
-from supercommit.utils import generate_commit_message_with_ollama
+from supercommit.utils import generate_commit_message
 
 app = typer.Typer()
+console = Console()
 
-__version__ = "0.2.0-alpha"
+__version__ = "0.1.0-alpha"
 
 
 def version_callback(value: bool):
@@ -18,14 +20,6 @@ def version_callback(value: bool):
 
 def get_current_branch(repo):
     return repo.active_branch.name
-
-
-def create_new_branch(repo):
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    new_branch = f"work-{timestamp}"
-    repo.git.checkout("-b", new_branch)
-    typer.echo(f"🔀 Switched to new branch: {new_branch}")
-    return new_branch
 
 
 def stage_changes(repo):
@@ -44,17 +38,18 @@ def show_changes(repo):
 
 def show_diff(repo):
     diff = repo.git.diff("HEAD")
-    typer.echo("📄 Diff with last commit:\n")
+    typer.echo("🔀 Diff with last commit:\n")
     typer.echo(diff)
 
 
-def generate_commit_message(repo):
+def get_commit_message(repo):
     # TODO: Handle potential unexistent ref. Example, first commit
     diff = repo.git.diff("HEAD")
     if not diff.strip():
         return "Update without code changes"
     # TODO: Handle potential too large payload and avoid LLM context window broken down
-    return generate_commit_message_with_ollama(diff)
+    with console.status("Generating a meaningful commit message...", spinner="monkey"):
+        return generate_commit_message(diff)
 
 
 def commit_changes(repo, message):
@@ -72,10 +67,13 @@ def push_branch(repo, branch):
 @app.command()
 def run(
     version: Annotated[
-        Optional[bool], typer.Option("--version", callback=version_callback)
+        Optional[bool],
+        typer.Option(
+            "--version, -v", help="Package version", callback=version_callback
+        ),
     ] = None,
     force: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
-    path=".",
+    path: str = typer.Option(".", help="Repository path"),
 ):
     repo = Repo(path)
     current_branch = get_current_branch(repo)
@@ -94,8 +92,8 @@ def run(
 
     stage_changes(repo)
 
-    message = generate_commit_message(repo)
-    typer.echo(f"📝 Suggested commit message:\n{message}")
+    message = get_commit_message(repo)
+    typer.echo(f"📝 Suggested commit message:\n {message}")
 
     if not force and not typer.confirm(text="Use this message?", default=True):
         message = typer.prompt("Enter your own commit message")
