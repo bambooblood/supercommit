@@ -7,12 +7,12 @@ from supercommit.utils import generate_commit_message_with_ollama
 
 app = typer.Typer()
 
-__version__ = "0.1.0"
+__version__ = "0.1.0-alpha"
 
 
 def version_callback(value: bool):
     if value:
-        print(f"supercommit: v{__version__}")
+        print(f"SuperCommit {__version__}")
         raise typer.Exit()
 
 
@@ -36,6 +36,12 @@ def has_changes(repo):
     return repo.is_dirty(untracked_files=True)
 
 
+def show_changes(repo):
+    status = repo.git.status()
+    typer.echo("📄 Status:\n")
+    typer.echo(status)
+
+
 def show_diff(repo):
     diff = repo.git.diff("HEAD")
     typer.echo("📄 Diff with last commit:\n")
@@ -43,9 +49,11 @@ def show_diff(repo):
 
 
 def generate_commit_message(repo):
+    # TODO: Handle potential unexistent ref. Example, first commit
     diff = repo.git.diff("HEAD")
     if not diff.strip():
         return "Update without code changes"
+    # TODO: Handle potential too large payload and avoid LLM context window broken down
     return generate_commit_message_with_ollama(diff)
 
 
@@ -66,36 +74,45 @@ def run(
     version: Annotated[
         Optional[bool], typer.Option("--version", callback=version_callback)
     ] = None,
+    force: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
     path=".",
 ):
     repo = Repo(path)
     current_branch = get_current_branch(repo)
-    if current_branch in ["main", "master"]:
-        if typer.confirm(
-            text=f"You are in {current_branch}, do you want to automatically create a new branch?",
-            default=True,
-        ):
-            current_branch = create_new_branch(repo)
 
     if not has_changes(repo):
         typer.echo("✅ No changes to commit.")
         raise typer.Exit()
 
+    show_changes(repo)
+
+    if not force and not typer.confirm(
+        text="Do you want to commit those changes?", default=True
+    ):
+        typer.echo("✅ No changes will be committed.")
+        raise typer.Exit()
+
     stage_changes(repo)
-    # show_diff(repo)
 
     message = generate_commit_message(repo)
     typer.echo(f"📝 Suggested commit message:\n{message}")
 
-    if not typer.confirm(text="Use this message?", default=True):
+    if not force and not typer.confirm(text="Use this message?", default=True):
         message = typer.prompt("Enter your own commit message")
 
     typer.echo(f"✍️ Commit message: {message}")
 
     commit_changes(repo, message)
 
-    if typer.confirm(text="Push commit?", default=True):
-        push_branch(repo, current_branch)
+    typer.echo("✅ Your changes've been committed!")
+
+    if not force and not typer.confirm(text="Push commit to remote?", default=True):
+        typer.echo("✅ Commit will not be pushed to remote")
+        raise typer.Exit()
+
+    push_branch(repo, current_branch)
+
+    typer.echo("✅ Commit pushed to remote")
 
 
 def main():

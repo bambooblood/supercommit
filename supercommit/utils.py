@@ -1,4 +1,10 @@
 import requests
+import os
+
+# model = "llama3.2:1b"
+model = "qwen2.5-coder:0.5b"
+SERVER = os.getenv("SUPERCOMMIT_OLLAMA_SERVER", "http://localhost:11434")
+MODEL = os.getenv("SUPERCOMMIT_OLLAMA_MODEL", model)
 
 
 def generate_commit_message_with_ollama(diff_text: str) -> str:
@@ -20,8 +26,8 @@ def generate_commit_message_with_ollama(diff_text: str) -> str:
     """
 
     response = requests.post(
-        "http://localhost:11434/api/generate",
-        json={"model": "llama3.2:1b", "prompt": prompt, "stream": False},
+        f"{SERVER}/api/generate",
+        json={"model": MODEL, "prompt": prompt, "stream": False},
     )
 
     if response.status_code == 200:
