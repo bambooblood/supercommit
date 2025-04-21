@@ -18,6 +18,4 @@ if os.getenv("SUPERCOMMIT_OLLAMA_SERVER"):
 if os.getenv("SUPERCOMMIT_OLLAMA_MODEL"):
     cfg["model"] = os.getenv("SUPERCOMMIT_OLLAMA_MODEL")
 
-# argparse
-
-print(cfg)
+# TODO: argparse

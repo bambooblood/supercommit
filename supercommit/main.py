@@ -1,85 +1,24 @@
 import typer
 from rich.console import Console
 from rich.spinner import Spinner
-from git import Repo, GitCommandError
 from typing import Annotated, Optional
 
-from supercommit.utils import generate_commit_message
+from supercommit.utils import generate_commit_message, version_callback
 from supercommit.config import cfg
+from supercommit.git import (
+    get_current_branch,
+    get_diff,
+    get_repo,
+    has_changes,
+    show_changes,
+    stage_changes,
+    commit_changes,
+    push_branch,
+)
 
 app = typer.Typer()
-console = Console()
 
 config = cfg
-
-__version__ = "0.1.0-alpha"
-
-
-def version_callback(value: bool):
-    if value:
-        print(f"SuperCommit {__version__}")
-        raise typer.Exit()
-
-
-def get_current_branch(repo):
-    return repo.active_branch.name
-
-
-def stage_changes(repo):
-    repo.git.add("--all")
-
-
-def has_changes(repo):
-    return repo.is_dirty(untracked_files=True)
-
-
-def show_changes(repo):
-    status = repo.git.status()
-    typer.echo("📄 Status:\n")
-    typer.echo(status)
-
-
-def show_diff(repo):
-    diff = repo.git.diff("HEAD")
-    typer.echo("🔀 Diff with last commit:\n")
-    typer.echo(diff)
-
-
-def get_commit_message(repo):
-    # TODO: Handle potential unexistent ref. Example, first commit
-    diff = repo.git.diff("HEAD")
-    if not diff.strip():
-        return "Update without code changes"
-    with console.status("Generating a meaningful commit message...", spinner="monkey"):
-        parsed_diff = parse_diff(diff)
-        return generate_commit_message(parsed_diff, config=config)
-
-
-def commit_changes(repo, message):
-    repo.index.commit(message)
-
-
-def push_branch(repo, branch):
-    try:
-        repo.git.push("--set-upstream", "origin", branch)
-        typer.echo(f"🚀 Pushed branch {branch} to origin.")
-    except GitCommandError as e:
-        typer.echo(f"⚠️ Push failed: {e}", err=True)
-
-
-def parse_diff(diff_text: str, MAX_DIFF_LINES=200):
-    diff_lines = diff_text.splitlines()
-
-    if len(diff_lines) > MAX_DIFF_LINES:
-        trimmed = "\n".join(diff_lines[:MAX_DIFF_LINES])
-        trimmed += "\n... [diff truncated]"
-        typer.echo(
-            f"⚠️ Large diff detected — considering only the first {str(MAX_DIFF_LINES)} lines"
-        )
-    else:
-        trimmed = diff_text
-
-    return trimmed
 
 
 @app.command()
@@ -93,7 +32,7 @@ def run(
     force: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
     path: str = typer.Option(".", help="Repository path"),
 ):
-    repo = Repo(path)
+    repo = get_repo(path)
     current_branch = get_current_branch(repo)
 
     if not has_changes(repo):
@@ -108,7 +47,8 @@ def run(
         typer.echo("✅ No changes will be committed.")
         raise typer.Exit()
 
-    message = get_commit_message(repo)
+    diff = get_diff(repo)
+    message = generate_commit_message(diff, config=config)
     typer.echo(f"📝 Suggested commit message: '{message}'")
 
     if not typer.confirm(text="Use this message?", default=True):

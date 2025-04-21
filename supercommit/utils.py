@@ -1,5 +1,18 @@
+import typer
+from rich.console import Console
+from rich.spinner import Spinner
+
 from supercommit.ollama import generate
-from supercommit.config import cfg
+
+console = Console()
+
+__version__ = "0.1.0-alpha"
+
+
+def version_callback(value: bool):
+    if value:
+        print(f"SuperCommit {__version__}")
+        raise typer.Exit()
 
 
 def get_summary_prompt(diff: str):
@@ -36,16 +49,35 @@ def get_commit_message_prompt(summary: str):
     """
 
 
-def generate_commit_message(diff_text: str, config=cfg) -> str:
-    model = config["model"]
-    server = config["server"]
+def generate_commit_message(diff_text: str, config: dict) -> str:
+    with console.status("Generating a meaningful commit message...", spinner="monkey"):
+        model = config["model"]
+        server = config["server"]
+        diff = truncate(text=diff_text)
 
-    summary_prompt = get_summary_prompt(diff=diff_text)
+        summary_prompt = get_summary_prompt(diff=diff)
 
-    summary = generate(prompt=summary_prompt, model=model, server=server)
+        summary = generate(prompt=summary_prompt, model=model, server=server)
 
-    commit_message_prompt = get_commit_message_prompt(summary=summary)
+        commit_message_prompt = get_commit_message_prompt(summary=summary)
 
-    commit_message = generate(prompt=commit_message_prompt, model=model, server=server)
+        commit_message = generate(
+            prompt=commit_message_prompt, model=model, server=server
+        )
 
-    return commit_message
+        return commit_message
+
+
+def truncate(text: str, MAX_LINES=200):
+    lines = text.splitlines()
+
+    if len(lines) > MAX_LINES:
+        trimmed = "\n".join(lines[:MAX_LINES])
+        trimmed += "\n... [diff truncated]"
+        typer.echo(
+            f"⚠️ Large diff detected — considering only the first {str(MAX_LINES)} lines"
+        )
+    else:
+        trimmed = text
+
+    return trimmed
