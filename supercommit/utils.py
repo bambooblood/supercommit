@@ -30,10 +30,19 @@ def summarise_git_diff(diff_text: str) -> str:
 
 
 def generate_commit_message(diff_text: str) -> str:
-    prompt = f""""
-    Generate JUST one concise conventional commit message based on this summary:
+    prompt = f"""
+    You are an assistant that writes a single, concise Git commit message.
 
+    Use the summary below to generate **one** short commit message in the **imperative mood** (e.g., "Add", "Fix", "Refactor"). Follow **conventional commit format** when appropriate (e.g., "feat:", "fix:", "chore:").
+
+    Respond with **only the commit message**, nothing else.
+
+    Summary:
+    \"\"\"
     {summarise_git_diff(diff_text)}
+    \"\"\"
+
+    Commit message:
     """
 
     return ollama_generate(prompt)
