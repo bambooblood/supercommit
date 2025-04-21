@@ -4,7 +4,7 @@ SuperCommit is an utility that helps you quickly commiting your changes, using L
 
 ## Requirements
 
-[Ollama](https://ollama.com/) must be running. By default we use "qwen2.5-coder:0.5b"
+[Ollama](https://ollama.com/) must be running. By default we use "llama3.2:1b"
 
 ## Usage
 
