@@ -1,8 +1,8 @@
 import requests
 import os
 
-# model = "llama3.2:1b"
-model = "qwen2.5-coder:0.5b"
+model = "llama3.2:1b"
+# model = "qwen2.5:0.5b"
 SERVER = os.getenv("SUPERCOMMIT_OLLAMA_SERVER", "http://localhost:11434")
 MODEL = os.getenv("SUPERCOMMIT_OLLAMA_MODEL", model)
 
