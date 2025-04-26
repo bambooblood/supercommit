@@ -3,11 +3,11 @@ from rich.console import Console
 from rich.spinner import Spinner
 from git import GitCommandError, Repo
 
-from ollama import generate
+from supercommit.ollama import generate
 
 console = Console()
 
-__version__ = "0.1.0-alpha"
+__version__ = "0.2.0-alpha"
 
 
 def version_callback(value: bool):

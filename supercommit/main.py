@@ -2,8 +2,8 @@ import typer
 from typing import Annotated, Optional
 import requests
 
-from config import cfg
-from utils import (
+from supercommit.config import cfg
+from supercommit.utils import (
     get_current_branch,
     get_diff,
     get_repo,
@@ -26,7 +26,8 @@ def exit(message: str, code=0):
     raise typer.Exit(code=code)
 
 
-def main(
+@app.command()
+def run(
     version: Annotated[
         Optional[bool],
         typer.Option(
@@ -34,8 +35,8 @@ def main(
         ),
     ] = None,
     force: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
-    path: str = typer.Option(".", help="Repository path"),
 ):
+    path = "."
     repo = get_repo(path)
     current_branch = get_current_branch(repo)
 
@@ -53,7 +54,7 @@ def main(
         message = generate_commit_message(diff_text=get_diff(repo), config=config)
     except requests.ConnectionError as e:
         exit(
-            f"ConnectionError: Unable to connect with Ollama server. Ensure Ollama is up and running {cfg["model"]} model",
+            f"ConnectionError: Unable to connect with Ollama server. Ensure Ollama is up and running '{cfg["model"]}' model",
             1,
         )
 
@@ -73,5 +74,5 @@ def main(
     push_branch(repo, current_branch)
 
 
-if __name__ == "__main__":
-    typer.run(main)
+def main():
+    app()

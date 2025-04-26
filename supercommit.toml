@@ -1,4 +1,4 @@
-# ~/.config/supercommit/config.toml
+# ~/.config/supercommit.toml
 
 # Which model to use for commit‑message generation
 provider = "ollama"
