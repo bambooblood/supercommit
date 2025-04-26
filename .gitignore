@@ -2,3 +2,4 @@ __pycache__
 supercommit.egg-info
 .venv
 .env
+build

@@ -1,9 +1,9 @@
 import typer
 from typing import Annotated, Optional
+import requests
 
-from supercommit.utils import generate_commit_message, version_callback
-from supercommit.config import cfg
-from supercommit.git import (
+from config import cfg
+from utils import (
     get_current_branch,
     get_diff,
     get_repo,
@@ -12,6 +12,8 @@ from supercommit.git import (
     stage_changes,
     commit_changes,
     push_branch,
+    generate_commit_message,
+    version_callback,
 )
 
 app = typer.Typer()
@@ -19,8 +21,12 @@ app = typer.Typer()
 config = cfg
 
 
-@app.command()
-def run(
+def exit(message: str, code=0):
+    typer.echo(message)
+    raise typer.Exit(code=code)
+
+
+def main(
     version: Annotated[
         Optional[bool],
         typer.Option(
@@ -34,18 +40,23 @@ def run(
     current_branch = get_current_branch(repo)
 
     if not has_changes(repo):
-        typer.echo("✅ No changes to commit.")
-        raise typer.Exit()
+        exit("✅ No changes to commit.")
 
     show_changes(repo)
 
     if not force and not typer.confirm(
         text="Do you want to commit those changes?", default=True
     ):
-        typer.echo("✅ No changes will be committed.")
-        raise typer.Exit()
+        exit("✅ No changes will be committed.")
 
-    message = generate_commit_message(diff_text=get_diff(repo), config=config)
+    try:
+        message = generate_commit_message(diff_text=get_diff(repo), config=config)
+    except requests.ConnectionError as e:
+        exit(
+            f"ConnectionError: Unable to connect with Ollama server. Ensure Ollama is up and running {cfg["model"]} model",
+            1,
+        )
+
     typer.echo(f"📝 Suggested commit message: '{message}'")
 
     if not typer.confirm(text="Use this message?", default=True):
@@ -57,15 +68,10 @@ def run(
     commit_changes(repo, message)
 
     if not force and not typer.confirm(text="Push commit to remote?", default=True):
-        typer.echo("✅ Commit will not be pushed to remote")
-        raise typer.Exit()
+        exit("✅ Commit will not be pushed to remote")
 
     push_branch(repo, current_branch)
 
 
-def main():
-    app()
-
-
 if __name__ == "__main__":
-    app()
+    typer.run(main)
