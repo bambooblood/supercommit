@@ -1,13 +1,21 @@
 import typer
+import toml, os
 from rich.console import Console
 from rich.spinner import Spinner
 from git import GitCommandError, Repo
 
 from supercommit.ollama import generate
 
+
+pyproject = {}
+pyproject_path = "pyproject.toml"
+
+if os.path.exists(pyproject_path):
+    pyproject.update(toml.load(pyproject_path))
+
 console = Console()
 
-__version__ = "0.2.0-alpha"
+__version__ = pyproject["project"].get("version")
 
 
 def version_callback(value: bool):

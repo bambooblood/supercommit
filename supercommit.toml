@@ -3,7 +3,7 @@
 # Which model to use for commit‑message generation
 provider = "ollama"
 server = "http://localhost:11434"
-model = "gemma3:1b"
+model = "gemma3:latest"
 
 # Commit‑message style
 [conventional]

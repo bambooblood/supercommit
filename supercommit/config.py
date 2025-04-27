@@ -7,7 +7,7 @@ user_cfg_path = os.path.expanduser("~/.config/supercommit.toml")
 if os.path.exists(user_cfg_path):
     cfg.update(toml.load(user_cfg_path))
 
-repo_cfg_path = os.path.join(os.getcwd(), "config.toml")
+repo_cfg_path = os.path.join(os.getcwd(), "supercommit.toml")
 
 if os.path.exists(repo_cfg_path):
     cfg.update(toml.load(repo_cfg_path))
