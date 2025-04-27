@@ -7,7 +7,7 @@ from git import GitCommandError, Repo
 from supercommit.ollama import generate
 
 
-pyproject = {"project": {"version": "0.2.5-alpha"}}
+pyproject = {"project": {"version": "0.2.6-alpha"}}
 pyproject_path = os.path.join(os.getcwd(), "pyproject.toml")
 
 if os.path.exists(pyproject_path):
@@ -46,20 +46,31 @@ def show_changes(repo: Repo):
     typer.echo(status)
 
 
-def show_diff(repo: Repo):
-    diff = repo.git.diff("HEAD")
+def show_diff(repo: Repo, staged: bool = False):
+    args = ["HEAD"]
+    if staged:
+        args.insert(0, "--staged")
+    diff = repo.git.diff(*args)
     typer.echo("🔀 Diff with last commit:\n")
     typer.echo(diff)
 
 
-def get_diff(repo: Repo):
-    # TODO: Handle potential unexistent ref. Example, first commit
-    return repo.git.diff("HEAD")
+def get_diff(repo: Repo, staged: bool = False) -> str:
+    try:
+        args = ["HEAD"]
+        if staged:
+            args.insert(0, "--staged")
+        return repo.git.diff(*args)
+    except GitCommandError as e:
+        return "No diff"
 
 
 def commit_changes(repo: Repo, message: str) -> None:
-    commit = repo.index.commit(message)
-    typer.echo(f"✅ Your changes've been committed ({commit.hexsha})")
+    try:
+        commit = repo.index.commit(message)
+        typer.echo(f"✅ Your changes've been committed ({commit.hexsha})")
+    except GitCommandError as e:
+        typer.echo(f"⚠️ Commit failed: {e}", err=True)
 
 
 def push_branch(repo: Repo, branch: str) -> None:

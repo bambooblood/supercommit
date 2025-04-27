@@ -9,6 +9,7 @@ from supercommit.utils import (
     get_repo,
     has_changes,
     show_changes,
+    show_diff,
     stage_changes,
     commit_changes,
     push_branch,
@@ -35,6 +36,9 @@ def run(
         ),
     ] = None,
     force: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompt"),
+    staged: bool = typer.Option(
+        False, "--staged", "-s", help="Commits only already staged files"
+    ),
 ):
     path = "."
     repo = get_repo(path)
@@ -44,14 +48,22 @@ def run(
         exit("✅ No changes to commit.")
 
     show_changes(repo)
+    show_diff(repo, staged)
 
-    if not force and not typer.confirm(
-        text="Do you want to commit those changes?", default=True
-    ):
+    commit_confirmation_message = "Do you want to commit staged changes?"
+
+    if not staged:
+        commit_confirmation_message = "Do you want to commit all changes?"
+    if not force and not typer.confirm(text=commit_confirmation_message, default=True):
         exit("✅ No changes will be committed.")
 
+    if not staged:
+        stage_changes(repo)
+
     try:
-        message = generate_commit_message(diff_text=get_diff(repo), config=config)
+        message = generate_commit_message(
+            diff_text=get_diff(repo, staged), config=config
+        )
     except requests.ConnectionError as e:
         exit(
             f"ConnectionError: Unable to connect with Ollama server. Ensure Ollama is up and running '{cfg["model"]}' model",
@@ -65,7 +77,6 @@ def run(
 
     typer.echo(f"✍️ Commit message: '{message}'")
 
-    stage_changes(repo)
     commit_changes(repo, message)
 
     if not force and not typer.confirm(text="Push commit to remote?", default=True):
