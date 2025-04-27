@@ -7,7 +7,7 @@ from git import GitCommandError, Repo
 from supercommit.ollama import generate
 
 
-pyproject = {}
+pyproject = {"project": {"version": "0.2.5-alpha"}}
 pyproject_path = os.path.join(os.getcwd(), "pyproject.toml")
 
 if os.path.exists(pyproject_path):
