@@ -8,6 +8,7 @@ def generate(prompt: str, model: str, server: str) -> str:
     )
 
     # TODO: Catch potential errors
+    # TODO: Include other providers
 
     if response.status_code == 200:
         result = response.json()
