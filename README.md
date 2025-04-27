@@ -4,7 +4,7 @@ SuperCommit is an utility that helps you quickly commiting your changes, using L
 
 ## Requirements
 
-[Ollama](https://ollama.com/) must be running. By default we use ""gemma3:1b""
+[Ollama](https://ollama.com/) must be running. By default we use ""gemma3:latest""
 
 ## Usage
 
@@ -14,19 +14,44 @@ pip install git+https://github.com/bambooblood/supercommit.git
 
 ```bash
 supercommit --version
+#[Output] SuperCommit 1.0.0
 ```
 
-Output:
+Try it in your repo! Make some changes and let the magic of supercommit commit it for you:
 
 ```bash
-SuperCommit 0.1.0
+supercommit -y
 ```
+
+`-y` command will try to commit all changes and push it to remote, but it will ask for your confirmation about the generated commit message.
+
+### Config
 
 If your Ollama Server is running on a different machine or you just want to experiment with another Ollama model:
 
 ```bash
 export SUPERCOMMIT_OLLAMA_SERVER=http://localhost:11434
 export SUPERCOMMIT_OLLAMA_MODEL=llama3.2:1b
+```
+
+Or you can create a `~/.config/supercommit.toml` file:
+
+```toml
+# ~/.config/supercommit.toml
+
+# Which model to use for commit‑message generation
+provider = "ollama"
+server = "http://localhost:11434"
+model = "gemma3:latest"
+
+# Commit‑message style
+[conventional]
+enabled = true
+types = ["feat","fix","docs","chore"]
+
+# Gitmoji support
+[gitmoji]
+enabled = true
 ```
 
 ### Args
@@ -36,15 +61,11 @@ supercommit --version
 ```
 
 ```bash
-supercommit --path path/to/your/repo
+supercommit --yes
 ```
 
-## Contributing
+## Development
 
 ```bash
 pip install -e .
-```
-
-```
-supercommit
 ```
