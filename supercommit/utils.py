@@ -18,51 +18,51 @@ console = Console()
 __version__ = pyproject["project"].get("version")
 
 
-def version_callback(value: bool):
+def version_callback(value: bool) -> None:
     if value:
         print(f"SuperCommit {__version__}")
         raise typer.Exit()
 
 
-def get_repo(path: str):
+def get_repo(path: str) -> Repo:
     return Repo(path)
 
 
-def get_current_branch(repo):
+def get_current_branch(repo: Repo):
     return repo.active_branch.name
 
 
-def stage_changes(repo):
+def stage_changes(repo: Repo):
     repo.git.add("--all")
 
 
-def has_changes(repo):
+def has_changes(repo: Repo):
     return repo.is_dirty(untracked_files=True)
 
 
-def show_changes(repo):
+def show_changes(repo: Repo):
     status = repo.git.status()
     typer.echo("📄 Status:\n")
     typer.echo(status)
 
 
-def show_diff(repo):
+def show_diff(repo: Repo):
     diff = repo.git.diff("HEAD")
     typer.echo("🔀 Diff with last commit:\n")
     typer.echo(diff)
 
 
-def get_diff(repo):
+def get_diff(repo: Repo):
     # TODO: Handle potential unexistent ref. Example, first commit
     return repo.git.diff("HEAD")
 
 
-def commit_changes(repo, message):
-    repo.index.commit(message)
-    typer.echo("✅ Your changes've been committed!")
+def commit_changes(repo: Repo, message: str) -> None:
+    commit = repo.index.commit(message)
+    typer.echo(f"✅ Your changes've been committed ({commit.hexsha})")
 
 
-def push_branch(repo, branch):
+def push_branch(repo: Repo, branch: str) -> None:
     try:
         repo.git.push("--set-upstream", "origin", branch)
         typer.echo(f"🚀 Pushed branch {branch} to origin.")
