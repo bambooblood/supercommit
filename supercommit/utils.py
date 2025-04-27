@@ -8,7 +8,7 @@ from supercommit.ollama import generate
 
 
 pyproject = {}
-pyproject_path = "pyproject.toml"
+pyproject_path = os.path.join(os.getcwd(), "pyproject.toml")
 
 if os.path.exists(pyproject_path):
     pyproject.update(toml.load(pyproject_path))
