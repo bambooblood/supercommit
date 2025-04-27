@@ -4,7 +4,7 @@ SuperCommit is an utility that helps you quickly commiting your changes, using L
 
 ## Requirements
 
-[Ollama](https://ollama.com/) must be running. By default we use ""gemma3:latest""
+[Ollama](https://ollama.com/) must be running. By default we use "gemma3:latest"
 
 ## Usage
 
